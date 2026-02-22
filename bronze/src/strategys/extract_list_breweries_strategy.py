@@ -32,7 +32,7 @@ class ExtractListBreweriesStrategy(BreweriesAPIInterface):
 
                 url = f"{self.base_url}?page={page}&per_page=50"
 
-                await asyncio.sleep(0.1)
+                await asyncio.sleep(0.3)
 
                 data = await self._get_async_response(session, url)
 

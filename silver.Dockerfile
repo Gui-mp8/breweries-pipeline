@@ -9,10 +9,10 @@ ENV PYTHONUNBUFFERED=1
 WORKDIR /app
 
 # Copia apenas o src
-COPY bronze/src/ ./src/
+COPY silver/src/ ./src/
 
 # Copia requirements
-COPY bronze/requirements.txt .
+COPY silver/requirements.txt .
 
 # Instala dependências
 RUN pip install --no-cache-dir -r requirements.txt
