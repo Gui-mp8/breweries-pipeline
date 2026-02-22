@@ -28,6 +28,10 @@ class LocalRepository(RepositoryInterface):
 
             async for page_data in data_generator:
 
+                if not isinstance(page_data, list):
+                    print("⚠️ Resposta inesperada:", page_data)
+                    continue
+
                 for item in page_data:
                     f.write(json.dumps(item, ensure_ascii=False) + "\n")
 
