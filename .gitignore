@@ -208,3 +208,4 @@ __marimo__/
 
 *.jsonl
 *.parquet
+breweries_agg/
