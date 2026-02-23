@@ -4,10 +4,11 @@ from pathlib import Path
 import os
 
 from airflow.decorators import dag
+from airflow.datasets import DatasetAll
 from airflow.providers.docker.operators.docker import DockerOperator
 from docker.types import Mount
 
-from include.utils.datasets import bronze_dataset
+from include.utils.datasets import bronze_dataset, silver_dataset
 
 PROJECT_ROOT = Path(os.environ["PROJECT_ROOT"])
 DATALAKE_PATH = str((PROJECT_ROOT / "datalake").resolve())
@@ -20,17 +21,17 @@ default_args = {
 }
 
 @dag(
-    dag_id="breweries_bronze_all_breweries",
+    dag_id="breweries_silver_all_breweries",
     default_args=default_args,
-    schedule=None,
+    schedule=DatasetAll(bronze_dataset(project_name="breweries", schema_key="all_breweries")),
     catchup=False,
-    tags=["BREWERY", "BRONZE"],
+    tags=["BREWERY", "SILVER"],
 )
 def breweries():
 
     DockerOperator(
         task_id="run_breweries_extraction",
-        image="breweries-bronze",
+        image="breweries-silver",
         api_version="auto",
         auto_remove="force",
         docker_url="unix://var/run/docker.sock",
@@ -43,7 +44,7 @@ def breweries():
                 type="bind",
             )
         ],
-        outlets=bronze_dataset(project_name="breweries", schema_key="all_breweries")
+        outlets=silver_dataset(project_name="breweries", schema_key="all_breweries")
     )
 
 breweries()

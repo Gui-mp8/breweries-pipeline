@@ -1,7 +1,6 @@
 #gold/src/main.py
 from pyspark.sql import SparkSession
-import logging
-logging.getLogger("py4j").setLevel(logging.ERROR)
+from transformers.breweries_aggregation_transformer import BreweriesAggregationTransformer
 
 def main():
 
@@ -19,12 +18,10 @@ def main():
 
     # Lê todos os parquet da Silver
     df = spark.read.parquet(f"{silver_path}/**/*.parquet")
+    
     # Agregação
-    df_agg = (
-        df.groupBy("state_province", "brewery_type")
-          .count()
-          .withColumnRenamed("count", "total_breweries")
-    )
+    transformer = BreweriesAggregationTransformer()
+    df_agg = transformer.transform(df)
 
     (
         df_agg
