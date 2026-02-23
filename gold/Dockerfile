@@ -7,7 +7,7 @@ ENV SPARK_HOME=/opt/spark
 ENV PATH="${SPARK_HOME}/bin:${PATH}"
 ENV PYTHONPATH=/app/src
 
-COPY gold/src/ ./src/
+COPY src/ ./src/
 
 # recomendo rodar em modo local dentro do container
 CMD ["spark-submit", "--master", "local[*]", "src/main.py"]
