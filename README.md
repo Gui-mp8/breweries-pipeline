@@ -91,13 +91,13 @@ The Airflow operators spin up local docker containers to run the `bronze`, `silv
 Navigate to the project root and run:
 ```bash
 # Build Bronze Container
-docker build -t breweries-bronze -f bronze.Dockerfile .
+docker build -t breweries-bronze ./bronze
 
 # Build Silver Container
-docker build -t breweries-silver -f silver.Dockerfile .
+docker build -t breweries-silver ./silver
 
 # Build Gold Container
-docker build -t breweries-gold -f gold.Dockerfile .
+docker build -t breweries-gold ./gold
 ```
 
 ### 2. Start Apache Airflow
