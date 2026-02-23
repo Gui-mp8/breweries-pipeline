@@ -19,6 +19,7 @@ def main():
 
     # Lê todos os parquet da Silver
     df = spark.read.parquet(f"{silver_path}/**/*.parquet")
+    
     # Agregação
     df_agg = (
         df.groupBy("state_province", "brewery_type")
