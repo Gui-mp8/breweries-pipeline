@@ -2,7 +2,7 @@ import pytest
 from pyspark.sql import SparkSession
 import os
 
-from main import transform_data
+from transformers.breweries_aggregation_transformer import BreweriesAggregationTransformer
 
 @pytest.fixture(scope="session")
 def spark():
@@ -25,7 +25,8 @@ def test_transform_data(spark):
     df = spark.createDataFrame(data, ["id", "state_province", "brewery_type"])
     
     # Perform transformation
-    df_agg = transform_data(df)
+    transformer = BreweriesAggregationTransformer()
+    df_agg = transformer.transform(df)
     
     # Collect results
     results = df_agg.collect()
