@@ -43,8 +43,7 @@ def breweries():
                 target="/app/datalake",
                 type="bind",
             )
-        ],
-        outlets=silver_dataset(project_name="breweries", schema_key="all_breweries")
+        ]
     )
 
 breweries()

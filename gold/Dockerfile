@@ -7,6 +7,7 @@ ENV SPARK_HOME=/opt/spark
 ENV PATH="${SPARK_HOME}/bin:${PATH}"
 ENV PYTHONPATH=/app/src
 
+USER root
 COPY src/ ./src/
 
 # recomendo rodar em modo local dentro do container
