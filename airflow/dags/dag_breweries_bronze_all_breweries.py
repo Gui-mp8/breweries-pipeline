@@ -17,7 +17,7 @@ default_args = {
     "start_date": pendulum.datetime(2026, 2, 21, tz="America/Sao_Paulo"),
     "retries": 2,
     "retry_delay": timedelta(minutes=2),
-    "email": ["seu-email@dominio.com"],
+    "email": ["gui.mp8@gmail.com"],
     "email_on_failure": True
 }
 
