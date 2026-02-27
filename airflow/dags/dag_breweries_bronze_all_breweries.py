@@ -16,9 +16,7 @@ default_args = {
     "owner": "Guilherme Machado Pires",
     "start_date": pendulum.datetime(2026, 2, 21, tz="America/Sao_Paulo"),
     "retries": 2,
-    "retry_delay": timedelta(minutes=2),
-    "email": ["gui.mp8@gmail.com"],
-    "email_on_failure": True
+    "retry_delay": timedelta(minutes=2)
 }
 
 @dag(
