@@ -5,7 +5,7 @@ class BreweriesAggregationTransformer:
 
     def transform(self, df: DataFrame) -> DataFrame:
         return (
-            df.groupBy("state", "brewery_type")
+            df.groupBy("location", "brewery_type")
               .count()
               .withColumnRenamed("count", "total_breweries")
         )

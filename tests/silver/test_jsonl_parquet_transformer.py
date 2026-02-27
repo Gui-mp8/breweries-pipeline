@@ -33,7 +33,7 @@ def test_jsonl_parquet_transformer(tmp_path):
     transformer.transform()
     
     # Assertions
-    # Expect directories to be created due to partitioning by state_province
+    # Expect directories to be created due to partitioning by location
     assert (silver_dir / "Texas").exists()
     assert (silver_dir / "unknown").exists()
     assert (silver_dir / "California").exists()

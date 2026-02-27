@@ -27,7 +27,7 @@ class JsonlParquetTransformer:
 
         df = pd.read_json(latest_file, lines=True)
 
-        df["state"] = df["state"].fillna("unknown")
+        df["location"] = df["state_province"].fillna("unknown")
 
         table = pa.Table.from_pandas(df)
 
@@ -35,7 +35,7 @@ class JsonlParquetTransformer:
             table,
             base_dir=str(silver_path),
             format="parquet",
-            partitioning=["state"],
+            partitioning=["location"],
             existing_data_behavior="overwrite_or_ignore"
         )
 

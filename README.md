@@ -43,9 +43,9 @@ graph TD
 
 - **Role**: Transforms raw JSON into an optimized columnar format.
 
-- **Implementation**: Utilizes `pandas` and `pyarrow`. Data is structured, null values in partition columns are handled, and the output is split dynamically.
+- **Implementation**: Utilizes `pandas` and `pyarrow`. Data is structured, a new `location` column is derived from `state_province` (with null values filled as `"unknown"`), and the output is split dynamically.
 
-- **Format**: Persisted as **Parquet**, partitioned by location (`state_province`).
+- **Format**: Persisted as **Parquet**, partitioned by `location`.
 
 ### 🥇 Gold Layer (Aggregated View)
 
@@ -53,7 +53,7 @@ graph TD
 
 - **Implementation**: Employs **PySpark** to group and aggregate data.
 
-- **Format**: Persisted as a CSV view containing the quantity of breweries per `brewery_type` and location (`state_province`).
+- **Format**: Persisted as a CSV view containing the quantity of breweries per `brewery_type` and `location`.
 
 ---
 
@@ -109,6 +109,14 @@ This pipeline uses Astro CLI for Airflow development and standard Docker for the
 ### Prerequisites
 1. [Docker Desktop](https://www.docker.com/products/docker-desktop) installed and running.
 2. [Astro CLI](https://docs.astronomer.io/astro/cli/install-cli) installed.
+3. **Configure the `.env` file**: The Airflow DAGs use a `PROJECT_ROOT` environment variable to resolve the local datalake path for Docker volume mounts. You must create the file `airflow/.env` based on the provided example:
+   ```bash
+   cp airflow/.env.example airflow/.env
+   ```
+   Then edit `airflow/.env` and set `PROJECT_ROOT` to the **absolute path** of this project on your machine:
+   ```
+   PROJECT_ROOT=/absolute/path/to/breweries-pipeline
+   ```
 
 ### 1. Build the Application Containers
 The Airflow operators spin up local docker containers to run the `bronze`, `silver`, and `gold` code. You must build these images first.
