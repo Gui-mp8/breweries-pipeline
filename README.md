@@ -32,38 +32,61 @@ graph TD
 ```
 
 ### 🥉 Bronze Layer (Raw Data)
+
 - **Role**: Ingests raw data directly from the API.
+
 - **Implementation**: Uses Python with `aiohttp` for asynchronous, fast data retrieval. It iterates through the paginated API endpoints to fetch all breweries.
+
 - **Format**: Persisted as raw JSON Lines (`.jsonl`) files in the local Datlake storage.
 
 ### 🥈 Silver Layer (Cleaned & Columnar)
+
 - **Role**: Transforms raw JSON into an optimized columnar format.
-- **Implementation**: Utilizes `pandas` and `pyarrow`. Data is structured, null values in partition columns are handled, and the output is split dynamically.
-- **Format**: Persisted as **Parquet**, partitioned by location (`state_province`).
+
+- **Implementation**: Utilizes `pandas` and `pyarrow`. Data is structured, a new `location` column is derived from `state_province` (with null values filled as `"unknown"`), and the output is split dynamically.
+
+- **Format**: Persisted as **Parquet**, partitioned by `location`.
 
 ### 🥇 Gold Layer (Aggregated View)
+
 - **Role**: Provides business-ready aggregations.
+
 - **Implementation**: Employs **PySpark** to group and aggregate data.
-- **Format**: Persisted as a CSV view containing the quantity of breweries per `brewery_type` and location (`state_province`).
+
+- **Format**: Persisted as a CSV view containing the quantity of breweries per `brewery_type` and `location`.
 
 ---
 
 ## 🛠️ Orchestration Strategy
 
 We use **Apache Airflow** (via Astronomer) as the orchestration engine.
+
 - **Data-Aware Scheduling**: Instead of rigid cron schedules, the pipeline uses Airflow Datasets (`DatasetAll`). The completion of the Bronze DAG triggers the Silver DAG, which, upon completion, triggers the Gold DAG.
+
 - **Isolation**: Each extraction and transformation step runs in isolated compute environments using the `DockerOperator`.
+
 - **Resiliency**: Each DAG defines retries (`retries: 2`) with a backoff delay (`retry_delay: 2 mins`) to handle temporary network or localized failures gracefully.
 
 ---
 
 ## 🛡️ Data Quality Considerations (Design)
 
-To ensure data integrity throughout the pipeline, the following Data Quality dimensions are considered for future implementation, potentially using frameworks like **Great Expectations** or custom PySpark validation stages:
+To ensure data integrity throughout the pipeline, the following Data Quality dimensions are considered for future implementation, potentially using DBT:
 
-1. **Completeness**: Assert that the total number of records ingested into Bronze matches the expected API "total" count header/endpoint.
-2. **Uniqueness**: Enforce primary key checks (e.g., `id`) in the Silver layer to prevent duplicated brewery entries.
-3. **Validity**: Validate the schema strictly before partitioning in the Silver layer (e.g., preventing unexpected nested JSON structs). Missing partition keys (`state_province`) are explicitly caught and assigned "unknown" during processing rather than failing silently.
+Between Bronze and Silver:
+
+1. **Not Empty**: Assert that there are no empty data in the Bronze layer.
+
+2. **Completeness**: Assert that the total number of records ingested into Bronze matches the expected API "total" count header/endpoint.
+
+3. **Uniqueness**: Enforce primary key checks (e.g., `id`) in the Silver layer to prevent duplicated brewery entries.
+
+
+Between Silver and Gold:
+
+1. **Not Empty**: Assert that there are no empty data in the Silver layer.
+
+2. **Uniqueness**: Enforce primary key checks (e.g., `id`) in the Gold layer to prevent duplicated brewery entries.
 
 ---
 
@@ -72,7 +95,9 @@ To ensure data integrity throughout the pipeline, the following Data Quality dim
 Robust monitoring is fundamental to pipeline reliability:
 
 - **Pipeline Monitoring**: Airflow provides native tracking of task durations, Gantt charts, and historical success rates through its UI.
-- **Alerting Mechanism**: We can design alerting mechanisms using Airflow Callbacks (`on_failure_callback`). When a task hard-fails (after retries), a callback function triggers a Slack or PagerDuty webhook, delivering the DAG Run context, Log URL, and exception summary to the data engineering team.
+
+- **Alerting Mechanism**: We can design alerting mechanisms using Airflow Callbacks (`on_failure_callback`). When a task hard-fails (after retries), a callback function triggers a Slack, Teams or any other webhook, delivering the DAG Run context, Log URL, and exception summary to the data engineering team.
+
 - **Telemetry**: For broader infrastructure observability, StatsD integration can be enabled in Airflow to export task volume and runtime metrics to Grafana/Prometheus or Datadog.
 
 ---
@@ -84,6 +109,14 @@ This pipeline uses Astro CLI for Airflow development and standard Docker for the
 ### Prerequisites
 1. [Docker Desktop](https://www.docker.com/products/docker-desktop) installed and running.
 2. [Astro CLI](https://docs.astronomer.io/astro/cli/install-cli) installed.
+3. **Configure the `.env` file**: The Airflow DAGs use a `PROJECT_ROOT` environment variable to resolve the local datalake path for Docker volume mounts. You must create the file `airflow/.env` based on the provided example:
+   ```bash
+   cp airflow/.env.example airflow/.env
+   ```
+   Then edit `airflow/.env` and set `PROJECT_ROOT` to the **absolute path** of this project on your machine:
+   ```
+   PROJECT_ROOT=/absolute/path/to/breweries-pipeline
+   ```
 
 ### 1. Build the Application Containers
 The Airflow operators spin up local docker containers to run the `bronze`, `silver`, and `gold` code. You must build these images first.
@@ -111,11 +144,14 @@ astro dev start
 
 ### 3. Trigger the Pipeline
 1. Access the Airflow UI at `http://localhost:8080/`. Log in with username `admin` and password `admin` (or the default Astro credentials).
+
 2. You will see three DAGs:
    - `breweries_bronze_all_breweries`
    - `breweries_silver_all_breweries`
    - `breweries_gold_all_breweries`
+
 3. Manually trigger **ONLY** the `breweries_bronze_all_breweries` DAG.
+
 4. Watch the magic! Once the Bronze dataset is produced, Airflow Dataset scheduling will automatically trigger Silver, and subsequently, Gold.
 
 ### 4. Verify the Data

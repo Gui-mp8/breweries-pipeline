@@ -27,15 +27,19 @@ class JsonlParquetTransformer:
 
         df = pd.read_json(latest_file, lines=True)
 
-        df["state_province"] = df["state_province"].fillna("unknown")
+        df["location"] = df["state_province"].fillna("unknown")
 
         table = pa.Table.from_pandas(df)
+
+        partitioning = ds.partitioning(
+            pa.schema([("location", pa.string())]), flavor="hive"
+        )
 
         ds.write_dataset(
             table,
             base_dir=str(silver_path),
             format="parquet",
-            partitioning=["state_province"],
+            partitioning=partitioning,
             existing_data_behavior="overwrite_or_ignore"
         )
 
