@@ -31,11 +31,15 @@ class JsonlParquetTransformer:
 
         table = pa.Table.from_pandas(df)
 
+        partitioning = ds.partitioning(
+            pa.schema([("location", pa.string())]), flavor="hive"
+        )
+
         ds.write_dataset(
             table,
             base_dir=str(silver_path),
             format="parquet",
-            partitioning=["location"],
+            partitioning=partitioning,
             existing_data_behavior="overwrite_or_ignore"
         )
 

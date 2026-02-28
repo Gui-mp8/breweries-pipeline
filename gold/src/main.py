@@ -16,8 +16,8 @@ def main():
     silver_path = "/app/datalake/silver"
     gold_path = "/app/datalake/gold"
 
-    # Lê todos os parquet da Silver
-    df = spark.read.parquet(f"{silver_path}/**/*.parquet")
+    # Read all partitioned parquet from Silver (partition discovery for 'location')
+    df = spark.read.parquet(silver_path)
     
     # Agregação
     transformer = BreweriesAggregationTransformer()

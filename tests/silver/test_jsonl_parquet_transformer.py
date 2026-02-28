@@ -33,13 +33,13 @@ def test_jsonl_parquet_transformer(tmp_path):
     transformer.transform()
     
     # Assertions
-    # Expect directories to be created due to partitioning by location
-    assert (silver_dir / "Texas").exists()
-    assert (silver_dir / "unknown").exists()
-    assert (silver_dir / "California").exists()
+    # Expect Hive-style directories due to partitioning by location
+    assert (silver_dir / "location=Texas").exists()
+    assert (silver_dir / "location=unknown").exists()
+    assert (silver_dir / "location=California").exists()
     
     # Read one of the parquet files to verify content
-    california_files = list((silver_dir / "California").glob("*.parquet"))
+    california_files = list((silver_dir / "location=California").glob("*.parquet"))
     assert len(california_files) > 0
     
     df_ca = pd.read_parquet(california_files[0])
